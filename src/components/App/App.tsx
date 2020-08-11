@@ -3,13 +3,11 @@ import {
   setToLocalStorage,
   getFromLocalStorage,
 } from "../../utils/storages.ts";
+import { DashBoard } from "../DashBoard/DashBoard.tsx";
+import { LogIn } from "../LogIn/LogIn.tsx";
+import { Route, Link } from "react-router-dom";
+import { routes } from "./Routes.tsx";
 
-const {
-  REACT_APP_API_KEY,
-  REACT_APP_API_NAME,
-  REACT_APP_API_URL,
-  REACT_APP_API_SCOPE,
-} = process.env;
 const TOKEN_STORAGE_KEY = "TOKEN";
 
 interface Board {
@@ -44,15 +42,12 @@ export class App extends React.Component<any, AppState> {
     return !!this.state.token;
   }
   private renderHeader() {
-    const requestUrl = `https://trello.com/1/authorize?return_url=${REACT_APP_API_URL}&expiration=1day&name=${REACT_APP_API_NAME}&scope=${REACT_APP_API_SCOPE}&response_type=token&key=${REACT_APP_API_KEY}`;
-
     return (
       <header>
-        {this.isLoggedIn() ? (
-          "Hello user"
-        ) : (
-          <a href={requestUrl}>login with trello account</a>
-        )}
+        {routes.map((route: any, i: number) => (
+          <Link key={i} to={route.path}></Link>
+        ))}
+        ;
       </header>
     );
   }
@@ -60,7 +55,9 @@ export class App extends React.Component<any, AppState> {
   private renderContent() {
     return (
       <main>
-        {this.isLoggedIn() ? <h2>some secret content</h2> : "Please Login"}
+        <Route path="/" exact component={LogIn} />
+        <Route path="/dashBoard" component={DashBoard} />
+        <h2>TesTed</h2>
       </main>
     );
   }
