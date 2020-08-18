@@ -5,7 +5,7 @@ import {
 } from "../../utils/storages.ts";
 import { DashBoard } from "../DashBoard/DashBoard.tsx";
 import { LogIn } from "../LogIn/LogIn.tsx";
-import { Route, Link } from "react-router-dom";
+import { Route, Link, RouteComponentProps } from "react-router-dom";
 import { routes } from "./Routes.tsx";
 
 const TOKEN_STORAGE_KEY = "TOKEN";
@@ -45,7 +45,9 @@ export class App extends React.Component<any, AppState> {
     return (
       <header>
         {routes.map((route: any, i: number) => (
-          <Link key={i} to={route.path}></Link>
+          <Link key={i} to={route.path}>
+            {route.title}
+          </Link>
         ))}
         ;
       </header>
@@ -55,9 +57,21 @@ export class App extends React.Component<any, AppState> {
   private renderContent() {
     return (
       <main>
-        <Route path="/" exact component={LogIn} />
-        <Route path="/dashBoard" component={DashBoard} />
-        <h2>TesTed</h2>
+        {routes.map((route: any, i: number) => (
+          <Route
+            key={i}
+            exact={route.exact}
+            path={route.path}
+            component={route.component}
+          />
+        ))}
+        <Route
+          path={"/test"}
+          render={(props: RouteComponentProps) => {
+            console.log(props);
+            return <h2>HEllo from render</h2>;
+          }}
+        />
       </main>
     );
   }

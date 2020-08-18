@@ -5,6 +5,7 @@ import { DashBoard } from "../DashBoard/DashBoard.tsx";
 export const routes = [
   {
     path: "/",
+    exact: true,
     component: LogIn,
     title: "login",
   },
