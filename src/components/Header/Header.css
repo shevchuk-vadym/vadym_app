@@ -1,0 +1,25 @@
+.header {
+  width: 100vw;
+  background-color: rosybrown;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.link {
+  width: 30%;
+  display: flex;
+  justify-content: space-around;
+  z-index: 1;
+}
+
+.name {
+  width: 100%;
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  color: white;
+}

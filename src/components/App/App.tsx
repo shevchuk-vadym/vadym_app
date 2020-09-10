@@ -1,15 +1,23 @@
 import * as React from "react";
+import { setToLocalStorage, getFromLocalStorage } from "../../utils/storages";
+import { DashBoard } from "../DashBoard/DashBoard";
+import { LogIn } from "../LogIn/LogIn";
+import { Header } from "../Header";
 import {
-  setToLocalStorage,
-  getFromLocalStorage,
-} from "../../utils/storages.ts";
-import { DashBoard } from "../DashBoard/DashBoard.tsx";
-import { LogIn } from "../LogIn/LogIn.tsx";
-import { Route, Link, RouteComponentProps } from "react-router-dom";
-import { routes } from "./Routes.tsx";
+  Route,
+  Link,
+  RouteComponentProps,
+  Switch,
+  Redirect,
+  RouteChildrenProps,
+  withRouter,
+} from "react-router-dom";
+import { routes, AppRoute, ROUTES_URLS } from "./Routes";
+import { OAuth } from "../OAuth";
+import { ProtectedRoute } from "../ProtectedRoute/ProtectedRoute";
 
 const TOKEN_STORAGE_KEY = "TOKEN";
-
+const { REACT_APP_API_KEY } = process.env;
 interface Board {
   id: string;
   name: string;
@@ -22,64 +30,103 @@ interface AppState {
   boards: Array<Board>;
 }
 
-export class App extends React.Component<any, AppState> {
+class App extends React.Component<any, AppState> {
   public state: AppState = {
     token: "",
     boards: [],
   };
-  private async setToken(token: string) {
-    this.setState({ token });
-    await setToLocalStorage(TOKEN_STORAGE_KEY, token);
+
+  componentDidMount() {
+    console.log(this.props);
+    this.getToken();
   }
+
   private async getToken() {
-    const token = await getFromLocalStorage(TOKEN_STORAGE_KEY);
-    return token;
+    if (this.state.token) {
+      return;
+    }
+
+    const token = getFromLocalStorage(TOKEN_STORAGE_KEY) as any;
+
+    if (!token) {
+      return this.navigateToLogin();
+    }
+
+    const url = `https://api.trello.com/1/members/me?key=${REACT_APP_API_KEY}&token=${token}`;
+    const response = await fetch(url);
+
+    if (response.ok === true && response.status === 200) {
+      this.setToken(token);
+      return this.navigateToDashboard();
+    }
+
+    return this.navigateToLogin();
   }
-  private getTokenFromUrl() {
-    return window.location.hash.split("=")[1];
+
+  private navigateToDashboard() {
+    this.props.history.push(ROUTES_URLS.DASHBOARD);
   }
-  private isLoggedIn() {
+
+  private navigateToLogin() {
+    this.props.history.push(ROUTES_URLS.LOGIN);
+  }
+
+  private get isLoggedIn() {
     return !!this.state.token;
   }
+
+  private setToken = async (token: string) => {
+    console.log(this, token);
+    this.setState({ token });
+    await setToLocalStorage(TOKEN_STORAGE_KEY, token);
+  };
+
   private renderHeader() {
-    return (
-      <header>
-        {routes.map((route: any, i: number) => (
-          <Link key={i} to={route.path}>
-            {route.title}
-          </Link>
-        ))}
-        ;
-      </header>
-    );
+    return <Header routes={routes} />;
   }
+
+  private renderRoute = (route: AppRoute, i: number) => {
+    if (route.isProtected) {
+      return (
+        <ProtectedRoute
+          exact={route.exact}
+          key={i}
+          path={route.path}
+          render={(props) =>
+            route.render({ ...props, token: this.state.token })
+          }
+          isAuthenticated={this.isLoggedIn}
+        />
+      );
+    } else {
+      return (
+        <Route
+          exact={route.exact}
+          key={i}
+          path={route.path}
+          render={(props) => route.render({ ...props })}
+        />
+      );
+    }
+  };
 
   private renderContent() {
     return (
       <main>
-        {routes.map((route: any, i: number) => (
+        <Switch>
+          {routes.map(this.renderRoute)}
           <Route
-            key={i}
-            exact={route.exact}
-            path={route.path}
-            component={route.component}
+            path={ROUTES_URLS.OAUTH}
+            render={(props: RouteChildrenProps) => (
+              <OAuth {...props} onSetToken={this.setToken} />
+            )}
           />
-        ))}
-        <Route
-          path={"/test"}
-          render={(props: RouteComponentProps) => {
-            console.log(props);
-            return <h2>HEllo from render</h2>;
-          }}
-        />
+          <Redirect to={ROUTES_URLS.NOT_FOUND} />
+        </Switch>
       </main>
     );
   }
-  public async componentDidMount() {
-    // const savedToken = await this.getToken();
-    const newToken = this.getTokenFromUrl();
-    this.setToken(newToken);
-  }
+
   public render() {
     return (
       <div>
@@ -89,3 +136,7 @@ export class App extends React.Component<any, AppState> {
     );
   }
 }
+
+const AppWithRouter = withRouter(App);
+
+export { AppWithRouter as App };

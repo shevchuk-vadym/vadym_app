@@ -1,0 +1,21 @@
+.board {
+  width: 200px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+  align-items: center;
+  background-image: inherit;
+  border-radius: 10px;
+  border: 1px solid black;
+}
+.board:hover {
+  transform: scale(1.03, 1.03);
+}
+
+.title {
+  display: flex;
+  /* align-items: center;
+  justify-content: center; */
+  margin: 0 auto;
+}
