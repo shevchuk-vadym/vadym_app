@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./Header.css";
 
-export class Header extends React.Component<any, any> {
+export class Header extends React.Component<any, any, { LogOut }> {
   render() {
     return (
       <header className="header">
@@ -16,6 +16,7 @@ export class Header extends React.Component<any, any> {
           )}
         </div>
         <div className="name">Trello</div>
+        <button>Log Out</button>
       </header>
     );
   }
